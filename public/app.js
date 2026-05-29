@@ -210,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
         statusText.textContent = "Päritakse radaripilte...";
 
         try {
-            const res = await fetch("/api/radar-times");
+            const res = await fetch("api/radar-times");
             if (!res.ok) throw new Error("API base returned an error");
             const data = await res.json();
             
@@ -332,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         try {
-            const response = await fetch("/api/generate", {
+            const response = await fetch("api/generate", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
