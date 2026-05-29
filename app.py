@@ -455,7 +455,7 @@ class RadarHTTPHandler(BaseHTTPRequestHandler):
             ]
             for path in font_paths:
                 if os.path.exists(path):
-                    font = ImageFont.truetype(path, 10)
+                    font = ImageFont.truetype(path, 12)
                     break
         except:
             pass
@@ -475,9 +475,9 @@ class RadarHTTPHandler(BaseHTTPRequestHandler):
             text_bbox = (0, 0, text_w, text_h)
 
         # Draw a beautiful background pill for the label (Top Left)
-        padding_x = 10
-        padding_y = 5
-        badge_w = text_w + padding_x * 2 + 12 # Extra room for the status dot
+        padding_x = 12
+        padding_y = 6
+        badge_w = text_w + padding_x * 2 + 16 # Extra room for the status dot
         badge_h = text_h + padding_y * 2
         
         # Position: Top Left
@@ -494,7 +494,7 @@ class RadarHTTPHandler(BaseHTTPRequestHandler):
         )
         
         # Draw indicator dot (perfectly centered vertically inside the badge)
-        dot_radius = 3
+        dot_radius = 4
         dot_x = pos_x + padding_x + dot_radius
         dot_y = pos_y + (badge_h // 2)
         draw.ellipse(
@@ -505,7 +505,7 @@ class RadarHTTPHandler(BaseHTTPRequestHandler):
         # Draw Text (perfectly centered vertically inside the badge)
         text_draw_y = pos_y + (badge_h // 2) - ((text_bbox[3] + text_bbox[1]) // 2)
         draw.text(
-            (pos_x + padding_x + 10, text_draw_y),
+            (pos_x + padding_x + 14, text_draw_y),
             label_text,
             fill=(248, 250, 252, 255), # Slate-50 near white
             font=font

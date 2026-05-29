@@ -304,11 +304,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const southWest = bounds.getSouthWest();
         
         const lonSpan = Math.abs(bboxCoords.maxLon - bboxCoords.minLon);
-        let refZoom = 7.5;
+        let refZoom = 6.5;
         if (lonSpan < 2.0) {
-            refZoom = 9.5; // Highly detailed city view (e.g. Tallinn, Tartu)
+            refZoom = 8.5; // Highly detailed city view (e.g. Tallinn, Tartu)
         } else if (lonSpan < 4.0) {
-            refZoom = 8.5; // Regional view (e.g. West, East)
+            refZoom = 7.5; // Regional view (e.g. West, East)
         }
         
         // Project geographic coordinates to absolute pixel coordinates at the reference zoom level
