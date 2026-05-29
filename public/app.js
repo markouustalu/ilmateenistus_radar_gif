@@ -46,11 +46,18 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // 1. Initialize Map (Leaflet)
+    const boundsLimit = L.latLngBounds(
+        [54.0, 19.0], // Southwest (Lat, Lon)
+        [62.0, 31.0]  // Northeast (Lat, Lon)
+    );
+
     const map = L.map("selection-map", {
         center: [58.6, 25.0], // Center of Estonia
         zoom: 7,
         minZoom: 5,
-        maxZoom: 11
+        maxZoom: 11,
+        maxBounds: boundsLimit,
+        maxBoundsViscosity: 1.0
     });
 
     // Elegant Dark Base Map
@@ -112,11 +119,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const posTL = markerTL.getLatLng();
         const posBR = markerBR.getLatLng();
 
-        // Constrain and define bounds
-        bboxCoords.minLon = Math.min(posTL.lng, posBR.lng);
-        bboxCoords.maxLon = Math.max(posTL.lng, posBR.lng);
-        bboxCoords.minLat = Math.min(posTL.lat, posBR.lat);
-        bboxCoords.maxLat = Math.max(posTL.lat, posBR.lat);
+        // Constrain and define bounds (limit selection box to radar range!)
+        bboxCoords.minLon = Math.max(21.0, Math.min(posTL.lng, posBR.lng));
+        bboxCoords.maxLon = Math.min(29.0, Math.max(posTL.lng, posBR.lng));
+        bboxCoords.minLat = Math.max(56.5, Math.min(posTL.lat, posBR.lat));
+        bboxCoords.maxLat = Math.min(61.0, Math.max(posTL.lat, posBR.lat));
 
         // Make sure it doesn't cross or invert
         boundsRect.setBounds([
@@ -124,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
             [bboxCoords.maxLat, bboxCoords.maxLon]
         ]);
         
-        // Lock other handles to corners
+        // Lock other handles to constrained corners
         markerTL.setLatLng([bboxCoords.maxLat, bboxCoords.minLon]);
         markerBR.setLatLng([bboxCoords.minLat, bboxCoords.maxLon]);
     }
