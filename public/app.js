@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const timestampToggle = document.getElementById("timestamp-toggle");
     
     const generateBtn = document.getElementById("generate-btn");
+    const generateBtnMobile = document.getElementById("generate-btn-mobile");
     const statusDot = document.getElementById("status-indicator");
     const statusText = document.getElementById("status-text");
     
@@ -239,6 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
             statusDot.className = "status-dot online";
             statusText.textContent = `Server valmis. Radari ajalugu: ${totalHistoryFrames} kaadrit, prognoos: ${totalForecastFrames} kaadrit.`;
             generateBtn.disabled = false;
+            generateBtnMobile.disabled = false;
 
         } catch (err) {
             console.error("Connection failed:", err);
@@ -267,9 +269,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. Generate weather radar GIF
     let progressTimer = null;
-    generateBtn.addEventListener("click", async () => {
+    const onGenerateClick = async () => {
         // Disable controls during build
         generateBtn.disabled = true;
+        generateBtnMobile.disabled = true;
         historySlider.disabled = true;
         forecastSlider.disabled = true;
         speedSlider.disabled = true;
@@ -295,14 +298,22 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }, 300);
 
-        // Calculate exact pixel dimensions of the selected bounding box on the Leaflet map container (pixel-for-pixel!)
+        // Calculate dynamic reference zoom level based on the geographic longitude span (decoupled from map view zoom!)
         const bounds = boundsRect.getBounds();
         const northEast = bounds.getNorthEast();
         const southWest = bounds.getSouthWest();
         
-        // Convert geographic coordinates to Leaflet map container pixel coords
-        const pointNE = map.latLngToContainerPoint(northEast);
-        const pointSW = map.latLngToContainerPoint(southWest);
+        const lonSpan = Math.abs(bboxCoords.maxLon - bboxCoords.minLon);
+        let refZoom = 7.5;
+        if (lonSpan < 2.0) {
+            refZoom = 9.5; // Highly detailed city view (e.g. Tallinn, Tartu)
+        } else if (lonSpan < 4.0) {
+            refZoom = 8.5; // Regional view (e.g. West, East)
+        }
+        
+        // Project geographic coordinates to absolute pixel coordinates at the reference zoom level
+        const pointNE = map.project(northEast, refZoom);
+        const pointSW = map.project(southWest, refZoom);
         
         const screenWidth = Math.round(Math.abs(pointNE.x - pointSW.x));
         const screenHeight = Math.round(Math.abs(pointNE.y - pointSW.y));
@@ -377,6 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } finally {
             // Re-enable all controls
             generateBtn.disabled = false;
+            generateBtnMobile.disabled = false;
             historySlider.disabled = false;
             forecastSlider.disabled = false;
             speedSlider.disabled = false;
@@ -384,5 +396,8 @@ document.addEventListener("DOMContentLoaded", () => {
             timestampToggle.disabled = false;
             presetButtons.forEach(btn => btn.disabled = false);
         }
-    });
+    };
+
+    generateBtn.addEventListener("click", onGenerateClick);
+    generateBtnMobile.addEventListener("click", onGenerateClick);
 });

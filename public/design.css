@@ -631,3 +631,20 @@ input:checked + .switch-slider:before {
         filter: drop-shadow(0 4px 15px var(--accent-orange-glow));
     }
 }
+
+/* Responsive display properties for Desktop and Mobile Generate buttons */
+#generate-btn-mobile {
+    display: none !important;
+}
+
+@media (max-width: 1024px) {
+    #generate-btn {
+        display: none !important;
+    }
+    #generate-btn-mobile {
+        display: inline-flex !important;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+    }
+}
