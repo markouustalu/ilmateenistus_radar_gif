@@ -56,6 +56,30 @@ python app.py
 The server will initialize and begin listening on:
 > **[http://localhost:8096](http://localhost:8096)**
 
+---
+
+## 🐳 Docker Quickstart (Alternative)
+
+For those interested in containerization or running the application without local Python setups, a fully configured Docker implementation is supported.
+
+### 1. Build the Docker Image
+```bash
+docker build -t eesti-radar-gif .
+```
+
+### 2. Run the Container
+Start the containerized server in the background:
+```bash
+docker run -d -p 8096:8096 --name eesti-radar eesti-radar-gif
+```
+The application will be instantly available on:
+> **[http://localhost:8096](http://localhost:8096)**
+
+### 3. Stop the Container
+```bash
+docker stop eesti-radar
+```
+
 ### 4. Customizing Your GIF
 1. **Define Selection**: Drag, resize, or use presets (e.g. *Tallinn & Põhja-Eesti*) to frame the bounding box on the dark Leaflet map.
 2. **Configure Parameters**: Choose your desired number of History frames (up to 36, ~3 hours back) and Forecast frames (up to 18, ~1.5 hours ahead), loop delay (frame speed), and multiplier scale.

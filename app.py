@@ -445,11 +445,13 @@ class RadarHTTPHandler(BaseHTTPRequestHandler):
         # Try to load a clean default font
         font = None
         try:
-            # Try loading a standard font from Windows directory
+            # Try loading a standard font from Windows or Linux directories
             font_paths = [
                 "C:\\Windows\\Fonts\\segoeuib.ttf",  # Segoe UI Bold
                 "C:\\Windows\\Fonts\\arialbd.ttf",   # Arial Bold
                 "C:\\Windows\\Fonts\\tahoma.ttf",    # Tahoma
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",         # Linux Debian/Ubuntu
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", # Linux RedHat/Fedora
             ]
             for path in font_paths:
                 if os.path.exists(path):
