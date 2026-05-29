@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eesti Radar GIF Generator | Weather Radar GIF</title>
+    <meta name="description" content="Generate a beautiful, compact, and efficient weather radar GIF of Estonia with custom history and forecast frames.">
+    
+    <!-- Modern Premium Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet CSS for Map selection -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <!-- Premium Custom Styles -->
+    <link rel="stylesheet" href="design.css">
+</head>
+<body>
+    <div class="glass-bg-decor decor-1"></div>
+    <div class="glass-bg-decor decor-2"></div>
+    
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-cloud-bolt icon-logo"></i>
+                <div class="brand">
+                    <h1>Eesti Radar</h1>
+                    <span>GIF GENERATOR</span>
+                </div>
+            </div>
+            <div class="server-status">
+                <span class="status-dot online" id="status-indicator"></span>
+                <span class="status-text" id="status-text">Ühendatakse serveriga...</span>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="app-main">
+            <!-- Left Panel: Controls -->
+            <section class="panel control-panel">
+                <div class="panel-header">
+                    <i class="fa-solid fa-sliders"></i>
+                    <h2>Seadistused</h2>
+                </div>
+                
+                <div class="settings-group">
+                    <!-- History Frames Slider -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span class="label-title">Ajaloo kaadrid (History)</span>
+                            <span class="label-value" id="history-val">12 kaadrit</span>
+                        </div>
+                        <input type="range" id="history-slider" min="1" max="36" value="12" class="slider-input">
+                        <span class="slider-hint" id="history-hint">Umbes 1 tund tagasi (5 min/kaader)</span>
+                    </div>
+
+                    <!-- Forecast Frames Slider -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span class="label-title">Prognoosi kaadrid (Forecast)</span>
+                            <span class="label-value" id="forecast-val">12 kaadrit</span>
+                        </div>
+                        <input type="range" id="forecast-slider" min="0" max="18" value="12" class="slider-input">
+                        <span class="slider-hint" id="forecast-hint">Umbes 1.0 tundi prognoosi (5 min/kaader)</span>
+                    </div>
+
+                    <!-- Frame Speed Slider -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span class="label-title">Kaadri viivitus (Kiirus)</span>
+                            <span class="label-value" id="speed-val">200 ms</span>
+                        </div>
+                        <input type="range" id="speed-slider" min="50" max="1000" step="50" value="200" class="slider-input">
+                        <span class="slider-hint">Väiksem väärtus = kiirem animatsioon</span>
+                    </div>
+
+                    <!-- Resolution Select -->
+                    <div class="control-group">
+                        <label class="control-label" for="res-select">
+                            <span class="label-title">Resolutsiooni kordaja</span>
+                        </label>
+                        <select id="res-select" class="styled-select">
+                            <option value="0.5">0.5× (Kompaktne / Väike fail)</option>
+                            <option value="1.0" selected>1.0× (Normaalne / Soovitatav)</option>
+                            <option value="1.5">1.5× (Kõrge eraldusvõime)</option>
+                        </select>
+                    </div>
+
+
+
+                    <!-- Timestamp Option -->
+                    <div class="control-group toggle-group">
+                        <span class="label-title">Kuva ajatemplid kaadritel</span>
+                        <label class="switch-toggle">
+                            <input type="checkbox" id="timestamp-toggle" checked>
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Generate Trigger Button -->
+                <button class="btn btn-primary" id="generate-btn" disabled>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Genereeri GIF</span>
+                </button>
+            </section>
+
+            <!-- Right Workspace: Interactive Map & Preview Area -->
+            <section class="right-workspace">
+                <!-- Map Selection Panel -->
+                <div class="panel map-panel">
+                    <div class="panel-header">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <h2>Vali radaripildi piirkond</h2>
+                    </div>
+                    
+                    <!-- Presets buttons -->
+                    <div class="presets-container">
+                        <span class="presets-label">Kiirvalikud:</span>
+                        <div class="presets-list">
+                            <button class="btn-preset active" data-preset="estonia">Kogu Eesti</button>
+                            <button class="btn-preset" data-preset="tallinn">Tallinn & Põhja-Eesti</button>
+                            <button class="btn-preset" data-preset="tartu">Tartu & Lõuna-Eesti</button>
+                            <button class="btn-preset" data-preset="west">Saared & Lääne-Eesti</button>
+                            <button class="btn-preset" data-preset="east">Virumaa & Ida-Eesti</button>
+                        </div>
+                    </div>
+
+                    <div id="selection-map" class="map-view"></div>
+                    
+                    <div class="map-coords-info">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Saad kaardil ristkülikut lohistada ja nurkadest venitada, et ala kohandada.</span>
+                    </div>
+                </div>
+
+                <!-- Preview and Output Panel -->
+                <div class="panel preview-panel" id="preview-section">
+                    <div class="panel-header">
+                        <i class="fa-solid fa-image"></i>
+                        <h2>GIF eelvaade & tulemus</h2>
+                    </div>
+
+                    <div class="preview-display">
+                        <!-- Initial state -->
+                        <div class="preview-placeholder" id="preview-placeholder">
+                            <i class="fa-solid fa-images placeholder-icon"></i>
+                            <p>Eelvaate nägemiseks või faili salvestamiseks vajuta nupule "Genereeri GIF".</p>
+                        </div>
+
+                        <!-- Live Loading Bar -->
+                        <div class="preview-loading hidden" id="preview-loading">
+                            <div class="spinner-container">
+                                <div class="premium-spinner"></div>
+                            </div>
+                            <h3>Laetakse WMS radarikihte...</h3>
+                            <p>Päritakse otse Keskkonnaagentuuri serverist. See võib võtta paar sekundit.</p>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="progress-bar"></div>
+                            </div>
+                        </div>
+
+                        <!-- Result Display -->
+                        <div class="preview-result hidden" id="preview-result">
+                            <img src="" alt="Genereeritud radaripilt" id="result-img" class="result-image">
+                            <div class="result-actions">
+                                <a href="" id="download-link" download="radar_weather.gif" class="btn btn-success">
+                                    <i class="fa-solid fa-download"></i>
+                                    Laadi GIF alla
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Leaflet JS for Map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- App Logic JS -->
+    <script src="app.js"></script>
+</body>
+</html>
