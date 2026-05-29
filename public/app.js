@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const map = L.map("selection-map", {
         center: [58.6, 25.0], // Center of Estonia
         zoom: 7,
-        minZoom: 6,
+        minZoom: 5,
         maxZoom: 11
     });
 
