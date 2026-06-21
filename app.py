@@ -277,6 +277,7 @@ class RadarHTTPHandler(BaseHTTPRequestHandler):
 
             def fetch_frame_worker(task):
                 task_idx, is_forecast, t_str = task
+                lightning_img = None
                 if is_forecast:
                     layer_url = "https://ilmgs.envir.ee/geoserver/ilm/wms"
                     layer_params = {
@@ -309,9 +310,39 @@ class RadarHTTPHandler(BaseHTTPRequestHandler):
                         "BBOX": lest97_bbox,
                         "TIME": t_str
                     }
+                    
+                    # Fetch lightning overlay for history frame
+                    try:
+                        try:
+                            utc_dt = datetime.datetime.strptime(t_str, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=datetime.timezone.utc)
+                        except ValueError:
+                            utc_dt = datetime.datetime.strptime(t_str.split(".")[0] + "Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+                        
+                        e = utc_dt - datetime.timedelta(minutes=6)
+                        n_str = e.strftime("%Y-%m-%d %H:%M")
+                        i_str = utc_dt.strftime("%Y-%m-%d %H:%M")
+                        cql_filter = f"date_timestamp between '{n_str}:59' and '{i_str}:00'"
+                        
+                        lightning_params = {
+                            "SERVICE": "WMS",
+                            "VERSION": "1.1.0",
+                            "REQUEST": "GetMap",
+                            "LAYERS": "lightning:pikne",
+                            "STYLES": "pikne_yld",
+                            "FORMAT": "image/png",
+                            "TRANSPARENT": "true",
+                            "WIDTH": str(width),
+                            "HEIGHT": str(height),
+                            "SRS": "EPSG:3301",
+                            "BBOX": lest97_bbox,
+                            "CQL_FILTER": cql_filter
+                        }
+                        lightning_img = self.fetch_wms_layer("https://gslightning.envir.ee/geoserver/lightning/wms", lightning_params)
+                    except Exception as le:
+                        print(f"Error fetching lightning: {le}")
                 
                 img = self.fetch_wms_layer(layer_url, layer_params)
-                radar_frames[task_idx] = (is_forecast, t_str, img)
+                radar_frames[task_idx] = (is_forecast, t_str, img, lightning_img)
 
             with ThreadPoolExecutor(max_workers=10) as executor:
                 executor.map(fetch_frame_worker, tasks)
@@ -323,7 +354,7 @@ class RadarHTTPHandler(BaseHTTPRequestHandler):
             bg_color = (255, 255, 255, 255)
 
             total_frames = len(radar_frames)
-            for frame_idx, (is_forecast, t_str, radar_img) in enumerate(radar_frames):
+            for frame_idx, (is_forecast, t_str, radar_img, lightning_img) in enumerate(radar_frames):
                 # Create background canvas
                 frame_canvas = Image.new("RGBA", (width, height), bg_color)
                 
@@ -339,6 +370,10 @@ class RadarHTTPHandler(BaseHTTPRequestHandler):
                 # Blend radar data if available
                 if radar_img:
                     frame_canvas.alpha_composite(radar_img)
+                
+                # Blend lightning data if available (history frames only)
+                if not is_forecast and lightning_img:
+                    frame_canvas.alpha_composite(lightning_img)
                 
                 # Overlay station map (city names and labels) on top of the radar!
                 if station_map_image:
